@@ -50,6 +50,7 @@ model Order {
   address    Address     @relation(fields: [addressId], references: [id])
   addressId  Int
   total      Float
+  status     String   @default("PENDING")
   createdAt  DateTime    @default(now())
   items      OrderItem[]
 }

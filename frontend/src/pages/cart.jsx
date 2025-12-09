@@ -1,17 +1,30 @@
 import { useSelector, useDispatch } from "react-redux";
 import { removeFromCart } from "../redux/slices/cartSlice";
+import React from "react";
 
-export default function Cart() {
+const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
 
-  console.log("CART REDUX ITEMS:", cartItems);
-
-  if (cartItems.length === 0) {
+  if (!cartItems || cartItems.length === 0) {
     return <h2>Your cart is empty</h2>;
   }
 
   const goToCheckout = () => {
+    // Convert cart to checkoutItems format
+    const items = cartItems.map(item => ({
+      productId: item.id,
+      title: item.title,
+      price: Number(item.price),
+      quantity: item.quantity,
+    }));
+
+    // clear any old "checkoutItem"
+    localStorage.removeItem("checkoutItem");
+
+    // save proper array
+    localStorage.setItem("checkoutItems", JSON.stringify(items));
+
     window.location.href = "/checkout";
   };
 
@@ -44,10 +57,20 @@ export default function Cart() {
 
       <button
         onClick={goToCheckout}
-        style={{ padding: "10px 20px", background: "orange", cursor: "pointer" }}
+        className="checkout-btn"
+        style={{
+          marginTop: "20px",
+          padding: "12px 25px",
+          background: "orange",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "18px",
+        }}
       >
         Proceed to Checkout
       </button>
     </div>
   );
-}
+};
+
+export default Cart;

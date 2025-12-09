@@ -1,4 +1,4 @@
-import React,{ useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProductById } from "../api/products.js";
 import { useDispatch } from "react-redux";
@@ -18,29 +18,33 @@ const Product = () => {
 
   if (!product) return <h2>Loading...</h2>;
 
- const handleAdd = () => {
-  const normalizedProduct = {
-    ...product,
-    id: Number(product.id),
-  };
+  const handleAdd = () => {
+    const normalizedProduct = {
+      ...product,
+      id: Number(product.id),
+    };
 
     console.log("Adding to cart:", normalizedProduct);
     dispatch(addToCart(normalizedProduct));
   };
 
-  // const handleBuyNow = (product) => {
-  //   localStorage.setItem("checkoutItem", JSON.stringify({
-  //     productId: product.id,
-  //     title: product.title,
-  //     price: product.price,
-  //     quantity: 1
-  //   }));
+  // ⭐ FIXED BUY NOW — uses checkoutItems array
+  const handleBuyNow = (product) => {
+    const items = [
+      {
+        productId: product.id,
+        title: product.title,
+        price: Number(product.price),
+        quantity: 1,
+      },
+    ];
 
-  //   window.location.href = "/checkout";
-  // };
+    // clear old values
+    localStorage.removeItem("checkoutItem");
+    localStorage.setItem("checkoutItems", JSON.stringify(items));
 
-
-
+    window.location.href = "/checkout";
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -73,10 +77,17 @@ const Product = () => {
       <button
         onClick={() => handleBuyNow(product)}
         className="buy-now-btn"
+        style={{
+          marginLeft: "10px",
+          background: "green",
+          color: "white",
+          padding: "10px 20px",
+          border: "none",
+          cursor: "pointer",
+        }}
       >
         Buy Now
       </button>
-
     </div>
   );
 };

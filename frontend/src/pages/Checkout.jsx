@@ -1,16 +1,26 @@
-import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-
+import { useDispatch, useSelector } from "react-redux";
+import { clearCart } from "../redux/slices/cartSlice";
 
 
 
 export default function Checkout() {
-  const cartItems = useSelector((state) => state.cart.items); // ✅ Correct path
+  const dispatch = useDispatch();
+
+  // Try LOCAL STORAGE cart first
+  const stored = localStorage.getItem("checkoutItems");
+  const lsItems = stored ? JSON.parse(stored) : [];
+
+  // Try REDUX cart second
+  const reduxItems = useSelector((state) => state.cart.items);
+
+  // FINAL: Prefer localStorage checkout items (buy now / proceed)
+  const cartItems = lsItems.length > 0 ? lsItems : reduxItems;
+
+  console.log("✔ CHECKOUT CART ITEMS:", cartItems);
+
+  // ADDRESS
   const token = localStorage.getItem("token");
-
-  console.log("CHECKOUT USESELECTOR:", cartItems);
-  console.log("CHECKOUT STOREFULL:", window.store?.getState()); 
-
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
 
@@ -24,8 +34,7 @@ export default function Checkout() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then(setAddresses)
-      .catch((err) => console.error("ADDRESS LIST ERROR:", err));
+      .then(setAddresses);
   }, []);
 
   const placeOrder = async () => {
@@ -45,21 +54,27 @@ export default function Checkout() {
     });
 
     const data = await res.json();
-    console.log("PLACE ORDER RESPONSE:", data);
+    console.log("ORDER RESPONSE:", data);
 
     if (data.order) {
-      alert("Order placed!");
+      alert("Order placed successfully!");
+
+      // 🔥 CLEAR CART FIRST
+      dispatch(clearCart());
+      localStorage.removeItem("checkoutItems");
+
+      // 🔥 THEN REDIRECT
       window.location.href = "/order-success";
     } else {
       alert("Order failed!");
     }
   };
 
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Checkout</h1>
 
-      {/* ADDRESS SELECT */}
       <h2>Select Address</h2>
       {addresses.map((a) => (
         <div key={a.id}>
@@ -72,19 +87,22 @@ export default function Checkout() {
         </div>
       ))}
 
-      {/* ORDER SUMMARY */}
       <h2>Order Summary</h2>
-      {cartItems.map((item) => (
-        <p key={item.id}>
-          {item.title} × {item.quantity} = ₹{item.price * item.quantity}
-        </p>
-      ))}
+      {cartItems.length === 0 ? (
+        <p>No items found.</p>
+      ) : (
+        cartItems.map((item) => (
+          <p key={item.id}>
+            {item.title} × {item.quantity} = ₹{item.quantity * item.price}
+          </p>
+        ))
+      )}
 
       <h2>Total: ₹{totalAmount}</h2>
 
       <button
         onClick={placeOrder}
-        style={{ padding: "10px 20px", background: "orange", cursor: "pointer" }}
+        style={{ padding: "10px 20px", background: "orange" }}
       >
         Place Order
       </button>

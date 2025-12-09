@@ -6,7 +6,6 @@ import authMiddleware from "../middleware/auth.js";
 import addressRoutes from "./routes/address.js";
 import orderRoutes from "./routes/order.js";
 import productRoutes from "./routes/productRoutes.js";
-import orderUserRoutes from "./routes/orderUser.js";
 
 dotenv.config();
 
@@ -18,7 +17,6 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/orders", orderUserRoutes);
 app.use("/api/products", productRoutes);
 
 // Test route
